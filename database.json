@@ -1,0 +1,29 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "Trần Công Đức",
+      "address": "Phong Giang"
+    },
+    {
+      "id": 2,
+      "fullName": "Phạm Viết Hoàng",
+      "address": "Lộc Thượng"
+    },
+    {
+      "id": 3,
+      "fullName": "Nguyễn Thị Bảo Ngọc",
+      "address": "Đại Phong"
+    },
+    {
+      "id": 4,
+      "fullName": "Nguyễn Thị Khánh Linh",
+      "address": "Văn Thủy"
+    },
+    {
+      "id": 5,
+      "fullName": "Nguyễn Thị Hồng",
+      "address": "Phong Giang"
+    }
+  ]
+}
