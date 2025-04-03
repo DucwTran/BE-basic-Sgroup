@@ -66,7 +66,6 @@ router.put("/users/:id", (req, res) => {
   }
   database.users[userIndex] = { id: userId, fullName, address };
   writeDatabaseFile(database);
-  // nên trả về data gì đó 
   res.status(204).end();
 });
 
