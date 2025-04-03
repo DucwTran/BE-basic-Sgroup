@@ -4,6 +4,8 @@ import fs from "fs";
 const router = Router();
 const DB_PATH = "./database.json"; // Đường dẫn đến file JSON
 
+
+// nên thêm try, catch để xử lý các lỗi có thể xảy ra khi thao tác với file
 // Hàm đọc dữ liệu từ file JSON
 function readDatabaseFile() {
   const jsonData = fs.readFileSync(DB_PATH, "utf-8");
@@ -21,6 +23,7 @@ router.get("/users", (req, res) => {
   res.status(200).json(database.users);
 });
 
+// thiếu xử lý trường hợp không tìm thấy user 
 // GET - Lấy thông tin người dùng theo ID
 router.get("/users/:id", (req, res) => {
   const userId = parseInt(req.params.id); 
@@ -32,6 +35,7 @@ router.get("/users/:id", (req, res) => {
 // POST - Tạo người dùng mới
 router.post("/users", (req, res) => {
   const { fullName, address } = req.body;
+  // kiểm tra xem có truyền đầy đủ thông tin không 
   const database = readDatabaseFile();
   const newUserId =
     database.users.length > 0
@@ -54,6 +58,7 @@ router.post("/users", (req, res) => {
 router.put("/users/:id", (req, res) => {
   const userId = parseInt(req.params.id);
   const { fullName, address } = req.body;
+  // kiểm tra xem có truyền đầy đủ thông tin không 
   const database = readDatabaseFile();
   const userIndex = database.users.findIndex((user) => user.id === userId);
   if (userIndex === -1) {
@@ -61,6 +66,7 @@ router.put("/users/:id", (req, res) => {
   }
   database.users[userIndex] = { id: userId, fullName, address };
   writeDatabaseFile(database);
+  // nên trả về data gì đó 
   res.status(204).end();
 });
 
