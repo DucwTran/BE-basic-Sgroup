@@ -6,7 +6,15 @@ import userRouter from "./routes/user.route.js";
 const PORT = process.env.PORT;
 const app = express();
 
+const middleWare = (req, res, next) => {
+  console.log("Global middleWare")
+  next();
+}
+
+app.use(middleWare);
 app.use(express.json());
+
+
 app.use(userRouter);
 
 app.get("/", (req, res) => {
