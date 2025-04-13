@@ -1,0 +1,79 @@
+doctype html
+html
+  head
+    meta(charset='UTF-8')
+    title Table
+    style.
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        padding: 12px;
+        text-align: left;
+      }
+      .btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+      .btn-add {
+        background-color: #3b82f6; /* Blue */
+      }
+      .btn-edit {
+        background-color: #facc15; /* Yellow */
+        color: black;
+      }
+      .btn-action-edit {
+        background-color: #22c55e; /* Green */
+      }
+      .btn-action-delete {
+        background-color: #ef4444; /* Red */
+      }
+      .action-group {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 8px;
+      }
+  body
+    h2 Table Title
+
+    // Buttons
+    div(style="text-align: right; margin-bottom: 10px")
+      button.btn.btn-add Add New
+      button.btn.btn-edit Edit
+
+    // Table
+    table
+      thead
+        tr
+          th #
+          th Name
+          th Actions
+      tbody
+        each user in users
+          tr
+            td= user.id
+            td= user.name
+            td
+              .action-group
+                button.btn.btn-action-edit Edit
+                button.btn.btn-action-delete(onclick=`deleteUser('${user._id}')`) Delete
+    script.
+      document.addEventListener('click', async (e) => {
+        if(e.target.classList.contains('btn-action-delete')) {
+          const row = e.target.closest('tr');
+          const userId = row.dataset.id;
+          
+          try {
+            await fetch(`/users/${userId}`, { method: 'DELETE' });
+            row.remove(); // Xóa hàng ngay lập tức
+          } catch(err) {
+            console.error('Lỗi khi xóa:', err);
+          }
+        }
+      });
