@@ -14,6 +14,7 @@ const middleWare = (req, res, next) => {
 
 app.use(middleWare);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Phân tích form data
 
 app.set("view engine", "pug");
 app.set("views", "./src/views");
