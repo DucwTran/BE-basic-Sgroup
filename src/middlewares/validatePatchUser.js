@@ -1,5 +1,5 @@
 export function validatePatchUser(req, res, next) {
-  const user = req.body[0];
+  const user = req.body;
   const errors = [];
 
   if (

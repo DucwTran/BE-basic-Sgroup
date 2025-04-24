@@ -1,5 +1,5 @@
 export function validateCreateUser(req, res, next) {
-  const user = req.body[0];
+  const user = req.body;
 
   if (typeof user.fullName !== "string" || user.fullName.trim().length < 10) {
     return res
@@ -22,11 +22,6 @@ export function validateCreateUser(req, res, next) {
     return res
       .status(400)
       .json({ message: "Tuổi phải là số và nằm trong khoảng 1 đến 19." });
-  }
-
-  const phoneRegex = /^09\d{9}$/;
-  if (!user.phone || !phoneRegex.test(user.phone)) {
-    return res.status(400).json({ message: "Số điện thoại không hợp lệ." });
   }
 
   next();

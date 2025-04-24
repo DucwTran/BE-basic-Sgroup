@@ -1,4 +1,4 @@
-import User from '../models/user.model.js';
+import User from "../models/user.model.js";
 
 export const renderHomePage = async (req, res) => {
   try {
@@ -46,16 +46,17 @@ export const postUser = async (req, res) => {
       email,
       gender,
       phone,
-      age
+      age,
     });
 
     const savedUser = await newUser.save();
     res.status(201).json({
       message: "Tạo người dùng thành công",
-      user: savedUser
+      user: savedUser,
     });
   } catch (error) {
-    if (error.code === 11000) { // Duplicate email error
+    if (error.code === 11000) {
+      // Duplicate email error
       res.status(400).json({ message: "Email đã tồn tại" });
     } else {
       res.status(500).json({ message: error.message });
@@ -85,7 +86,7 @@ export const putUser = async (req, res) => {
 
     res.status(200).json({
       message: "Cập nhật thành công",
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -94,11 +95,10 @@ export const putUser = async (req, res) => {
 
 export const patchUser = async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -106,7 +106,7 @@ export const patchUser = async (req, res) => {
 
     res.status(200).json({
       message: "Cập nhật một phần thành công",
-      user: updatedUser
+      user: updatedUser,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -116,14 +116,14 @@ export const patchUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
-    
+
     if (!deletedUser) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
     res.status(200).json({
       message: "Xóa người dùng thành công",
-      user: deletedUser
+      user: deletedUser,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
