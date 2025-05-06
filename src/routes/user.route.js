@@ -4,8 +4,6 @@ import { validatePatchUser } from "../middlewares/validatePatchUser.js";
 import UserController from "../controllers/user.controller.js";
 const router = Router();
 
-router.get("/", UserController.renderHomePage);
-
 router.get("/users", UserController.getAllUsers);
 
 router.get("/users/:id", UserController.getUserById);

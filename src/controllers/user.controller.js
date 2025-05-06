@@ -1,14 +1,6 @@
 import User from "../models/user.model.js";
 
 export class UserController {
-  static async renderHomePage(req, res) {
-    try {
-      const users = await User.find();
-      res.render("test", { users });
-    } catch (error) {
-      res.render("error", { message: "Lỗi khi tải dữ liệu" });
-    }
-  }
 
   static async getAllUsers(req, res) {
     try {
