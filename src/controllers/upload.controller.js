@@ -1,31 +1,13 @@
+import { UploadService } from "../services/upload.service.js";
+
 export class UploadController {
-  // Hàm xử lý upload file đơn
-  static uploadSingleFile(req, res) {
-    if (!req.file) {
-      return res
-        .status(400)
-        .json({ message: "Không có file nào được tải lên" });
-    }
-    console.log(req.file);
-    return res.status(200).json({
-      message: "Tải lên file thành công",
-      file: req.file,
-    });
+  static async uploadSingleFile(req, res) {
+    const result = UploadService.handleSingleFileUpload(req.file);
+    return res.status(200).json(result);
   }
 
-  // Hàm xử lý upload nhiều file
-  static uploadMultipleFiles(req, res) {
-    if (!req.files || req.files.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Không có file nào được tải lên" });
-    }
-    console.log(req.files);
-    return res.status(200).json({
-      message: "Tải lên nhiều file thành công",
-      files: req.files,
-    });
+  static async uploadMultipleFiles(req, res) {
+    const result = UploadService.handleMultipleFilesUpload(req.files);
+    return res.status(200).json(result);
   }
 }
-
-export default UploadController;

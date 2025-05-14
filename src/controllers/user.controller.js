@@ -1,129 +1,84 @@
-import User from "../models/user.model.js";
+import { UserService } from "../services/user.service.js";
+import { BadRequestError, NotFoundError } from "../handlers/error.response.js";
 
 export class UserController {
-
   static async getAllUsers(req, res) {
-    try {
-      const users = await User.find();
-      res.status(200).json(users);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+    const users = await UserService.getAllUsers();
+    res.status(200).json(users);
   }
 
   static async getUserById(req, res) {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+    const user = await UserService.getUserById(req.params.id);
+    if (!user) throw new NotFoundError("User not found");
+    res.status(200).json(user);
   }
 
   static async postUser(req, res) {
     const { fullName, address, email, gender, phone, age } = req.body;
 
     if (!fullName || !address || !email || !gender || !phone || !age) {
-      return res.status(400).json({
-        message: "Vui lòng nhập đủ thông tin user",
-      });
+      throw new BadRequestError("Vui lòng nhập đủ thông tin user");
     }
 
-    try {
-      const newUser = new User({
-        fullName,
-        address,
-        email,
-        gender,
-        phone,
-        age,
-      });
+    const user = await UserService.createUser({
+      fullName,
+      address,
+      email,
+      gender,
+      phone,
+      age,
+    });
 
-      const savedUser = await newUser.save();
-      res.status(201).json({
-        message: "Tạo người dùng thành công",
-        user: savedUser,
-      });
-    } catch (error) {
-      if (error.code === 11000) {
-        res.status(400).json({ message: "Email đã tồn tại" });
-      } else {
-        res.status(500).json({ message: error.message });
-      }
-    }
+    res.status(201).json({ message: "Tạo người dùng thành công", user });
   }
 
   static async putUser(req, res) {
     const { fullName, address, email, gender, phone, age } = req.body;
 
     if (!fullName || !address || !email || !gender || !phone || !age) {
-      return res.status(400).json({
-        message: "Vui lòng cung cấp đầy đủ thông tin",
-      });
+      throw new BadRequestError("Vui lòng cung cấp đầy đủ thông tin");
     }
 
-    try {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        { fullName, address, email, gender, phone, age },
-        { new: true, runValidators: true }
-      );
+    const user = await UserService.updateUser(req.params.id, {
+      fullName,
+      address,
+      email,
+      gender,
+      phone,
+      age,
+    });
 
-      if (!updatedUser) {
-        return res.status(404).json({ message: "Không tìm thấy người dùng" });
-      }
+    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
 
-      res.status(200).json({
-        message: "Cập nhật thành công",
-        user: updatedUser,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({ message: "Cập nhật thành công", user });
   }
 
   static async patchUser(req, res) {
-    try {
-      const updatedUser = await User.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+    const user = await UserService.updateUser(req.params.id, req.body);
+    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
 
-      if (!updatedUser) {
-        return res.status(404).json({ message: "Không tìm thấy người dùng" });
-      }
-
-      res.status(200).json({
-        message: "Cập nhật một phần thành công",
-        user: updatedUser,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+    res.status(200).json({ message: "Cập nhật một phần thành công", user });
   }
 
   static async deleteUser(req, res) {
-    try {
-      const deletedUser = await User.findByIdAndDelete(req.params.id);
+    const user = await UserService.deleteUser(req.params.id);
+    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
 
-      if (!deletedUser) {
-        return res.status(404).json({ message: "Không tìm thấy người dùng" });
-      }
+    res.status(200).json({ message: "Xóa người dùng thành công", user });
+  }
 
-      res.status(200).json({
-        message: "Xóa người dùng thành công",
-        user: deletedUser,
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
+  static async getUserInfo(req, res) {
+    const user = await UserService.getUserInfo(req.userId);
+    if (!user) throw new NotFoundError("Người dùng không tồn tại");
+
+    res.status(200).json({
+      fullName: user.fullName,
+      email: user.email,
+      address: user.address,
+      phone: user.phone,
+      gender: user.gender,
+      age: user.age,
+    });
   }
 }
 

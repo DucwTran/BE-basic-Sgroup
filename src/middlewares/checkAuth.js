@@ -10,25 +10,27 @@ const checkAuth = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-
   if (!token) {
     return res
       .status(401)
       .json({ message: "Không có token, yêu cầu đăng nhập" });
   }
 
-  const refreshTokenSecret = process.env.REFRESH_TOKEN_SECRET; // Hoặc accessTokenSecret tùy vào cách triển khai
+  const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
+
   try {
-    // Giải mã token và lấy thông tin người dùng
-    const decoded = jwt.verify(token, refreshTokenSecret); // Đảm bảo sử dụng đúng secret key
+    const decoded = jwt.verify(token, accessTokenSecret);
 
-    // Gán thông tin người dùng vào request để sử dụng ở các controller tiếp theo
-    req.userId = decoded.id; // Giả sử bạn đã lưu userId trong payload của token
+    if (!decoded || !decoded.id) {
+      return res
+        .status(401)
+        .json({ message: "Token không chứa thông tin người dùng" });
+    }
 
-    next(); // Tiến hành tới các middleware/controller tiếp theo
+    req.userId = decoded.id;
+    next();
   } catch (error) {
-    console.error(error);
-    res.status(403).json({ message: "Token không hợp lệ" });
+    res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
   }
 };
 
