@@ -65,6 +65,20 @@ export class AuthController {
 
     return res.status(200).json({ message: "Logout thành công" });
   }
+
+  static async forgotPassword (req, res) {
+    const { email } = req.body;
+    const result = await AuthService.sendOtpToEmail(email);
+    res.json(result);
+  };
+
+  static async verifyOtp (req, res) {
+    const { email, otp, newPassword } = req.body;
+    const result = await AuthService.verifyOtpAndResetPassword(email, otp, newPassword);
+    res.status(200).json({
+      message: "reset password success",
+    });
+  };
 }
 
 export default AuthController;

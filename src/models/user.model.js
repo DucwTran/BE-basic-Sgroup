@@ -16,6 +16,8 @@ const userSchema = new mongoose.Schema({
   },
   phone: String,
   age: Number,
+  otp: String,
+  otpExpiresAt: Date,
 });
 
 const User = mongoose.model("User", userSchema, "users");
