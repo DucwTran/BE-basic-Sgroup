@@ -1,6 +1,8 @@
 import express from "express";
 import userRouter from "./src/routes/user.route.js";
 import authRouter from "./src/routes/auth.route.js";
+import pollRouter from "./src/routes/poll.route.js";
+import voteRouter from "./src/routes/vote.route.js";
 import uploadRouter from "./src/routes/upload.route.js";
 import dotenv from "dotenv";
 import connect from "./src/config/database.js";
@@ -17,6 +19,8 @@ app.use(express.urlencoded({ extended: true })); // Phân tích form data
 app.use(cookieParser());
 app.use("/api/v1", userRouter); 
 app.use("/api/v1", authRouter); 
+app.use("/api/v1", pollRouter); 
+app.use("/api/v1", voteRouter); 
 app.use("/upload", uploadRouter);
 
 app.use("*", (req, res) => {
