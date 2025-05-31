@@ -26,7 +26,7 @@ const checkAuth = (req, res, next) => {
         .status(401)
         .json({ message: "Token không chứa thông tin người dùng" });
     }
-
+    req.role = decoded.role;
     req.userId = decoded.id;
     next();
   } catch (error) {

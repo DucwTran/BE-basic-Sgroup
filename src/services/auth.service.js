@@ -42,10 +42,10 @@ export class AuthService {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) throw new Error("Invalid password");
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email, role: user.role };
 
     const accessToken = jwt.sign(payload, accessTokenSecret, {
-      expiresIn: "15m",
+      expiresIn: "6d",
     });
 
     const refreshToken = jwt.sign(payload, refreshTokenSecret, {
