@@ -12,7 +12,10 @@ const voteSchema = new mongoose.Schema(
       ref: "Poll",
       required: true,
     },
-    optionId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    optionId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      required: true 
+    },
   },
   { timestamps: true }
 );

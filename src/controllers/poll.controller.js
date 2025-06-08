@@ -1,98 +1,82 @@
-import PollService from "../services/poll.service.js";
-import Poll from "../models/poll.model.js";
-import {
-  BadRequestError,
-  AuthFailureError,
-  ConflictRequestError,
-} from "../handlers/error.response.js";
+import { OK } from "../handlers/success.response.js";
 
-class PollController {
-  static async createPoll(req, res) {
+export default class PollController {
+  constructor(PollService) {
+    this.pollService = PollService;
+  }
+  createPoll = async (req, res) => {
     const { title, description } = req.body;
-
-    if (!title || typeof title !== "string" || title.trim() === "") {
-      throw new BadRequestError("Câu hỏi không được để trống");
-    }
-
-    if (!req.userId) {
-      throw new AuthFailureError("Bạn chưa đăng nhập");
-    }
-
-    const existing = await Poll.findOne({ title });
-    if (existing) {
-      throw new ConflictRequestError("Câu hỏi đã tồn tại");
-    }
-
     const data = {
       title,
       description,
       createdBy: req.userId,
       options: [],
     };
-    const poll = await PollService.createPoll(data);
-    res.status(201).json(poll);
-  }
+    const poll = await this.pollService.createPoll(data);
+    new OK({
+      metadata: poll,
+      message: "Create successfully",
+    }).send(res);
+  };
 
-  static async getAllPolls(req, res) {
+  getAllPolls = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-
-    const result = await PollService.getAllPolls({ page, limit });
-
-    res.json({
-      success: true,
+    const result = await this.pollService.getAllPolls({ page, limit });
+    new OK({
       message: "Get all Poll successfully",
-      data: result.polls,
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
-    });
-  }
+      metadata: {
+        data: result.polls,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+      },
+    }).send(res);
+  };
 
-  static async getPollById(req, res) {
+  getPollById = async (req, res) => {
     const { id } = req.params;
-    const poll = await PollService.getPollById(id);
-    if (!poll) {
-      return res.status(404).json({
-        success: false,
-        message: "Poll not found",
-        poll: poll
-      });
-    }
-    res.json({
-      success: true,
-      message: "Get Poll successfully",
-      data: poll,
-    });
-  }
+    const poll = await this.pollService.getPollById(id);
+    new OK({
+      metadata: poll,
+      message: "successfully",
+    }).send(res);
+  };
 
-  static async addOption(req, res) {
+  addOption = async (req, res) => {
     const { pollId } = req.params;
     const { text } = req.body;
-    const updated = await PollService.addOption(pollId, text);
-    res.json(updated);
-  }
+    const updated = await this.pollService.addOption(pollId, text);
+    new OK({
+      message: "successfully",
+      metadata: updated,
+    }).send(res);
+  };
 
-  static async removeOption(req, res) {
+  removeOption = async (req, res) => {
     const { pollId, optionId } = req.params;
-    const updatedPoll = await PollService.removeOption(pollId, optionId);
-    if (!updatedPoll) {
-      return res.status(404).json({ message: "Poll not found" });
-    }
-    res.json(updatedPoll);
-  }
+    const updatedPoll = await this.pollService.removeOption(pollId, optionId);
+    new OK({
+      message: "successfully",
+      metadata: updatedPoll,
+    }).send(res);
+  };
 
-  static async lockPoll(req, res) {
+  lockPoll = async (req, res) => {
     const { pollId } = req.params;
-    const updated = await PollService.lockPoll(pollId);
-    res.json(updated);
-  }
+    const updated = await this.pollService.lockPoll(pollId);
+    new OK({
+      message: "successfully",
+      metadata: updated,
+    }).send(res);
+  };
 
-  static async unlockPoll(req, res) {
+  unlockPoll = async (req, res) => {
     const { pollId } = req.params;
-    const updated = await PollService.unlockPoll(pollId);
-    res.json(updated);
-  }
+    const updated = await this.pollService.unlockPoll(pollId);
+    new OK({
+      message: "successfully",
+      metadata: updated,
+    }).send(res);
+  };
 }
-
-export default PollController;

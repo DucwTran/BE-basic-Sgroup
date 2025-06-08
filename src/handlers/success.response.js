@@ -41,4 +41,7 @@ class CREATED extends SuccessResponse {
   }
 }
 
-export { OK, CREATED };
+export {
+  OK, //200 - yêu cầu thành công
+  CREATED, //201 - tạo mới thành công
+};

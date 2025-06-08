@@ -1,46 +1,41 @@
-import { AuthService } from "../services/auth.service.js";
-
-export class AuthController {
-  static async register(req, res) {
-    const { fullName, address, email, password, gender, phone, age } = req.body;
-    const result = await AuthService.register({
-      fullName,
-      address,
-      email,
-      password,
-      gender,
-      phone,
-      age,
-    });
-    return res.status(201).json(result);
+import { OK } from "../handlers/success.response.js";
+//thiếu jwt expired
+export default class AuthController {
+  constructor(AuthService) {
+    this.authService = AuthService;
   }
+  register = async (req, res) => {
+    const result = await this.authService.register(req.body);
+    new OK({
+      message: "successfully!",
+      metadata: {
+        user: result,
+      },
+    }).send(res);
+  };
 
-  static async login(req, res) {
+  login = async (req, res) => {
     const { email, password } = req.body;
-    const { accessToken, refreshToken } = await AuthService.login(
+    const { accessToken, refreshToken } = await this.authService.login(
       email,
       password
     );
-
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: false, // true nếu dùng HTTPS
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-
-    return res.json({
-      data: { accessToken },
+    new OK({
       message: "Login successfully",
-    });
-  }
+      metadata: { accessToken },
+    }).send(res);
+  };
 
-  static async processNewToken(req, res) {
+  processNewToken = async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) throw new Error("Không có refreshToken");
-
     const { newAccessToken, newRefreshToken } =
-      await AuthService.refreshAccessToken(refreshToken);
+      await this.authService.refreshAccessToken(refreshToken);
 
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
@@ -48,37 +43,41 @@ export class AuthController {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
-
-    return res.json({
-      data: { accessToken: newAccessToken },
+    new OK({
+      metadata: { accessToken: newAccessToken },
       message: "Cấp accessToken mới thành công",
-    });
-  }
+    }).send(res);
+  };
 
-  static async logout(req, res) {
+  logout = async (req, res) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: false, // true nếu dùng HTTPS
       sameSite: "strict",
       maxAge: 0,
     });
-
-    return res.status(200).json({ message: "Logout thành công" });
-  }
-
-  static async forgotPassword (req, res) {
-    const { email } = req.body;
-    const result = await AuthService.sendOtpToEmail(email);
-    res.json(result);
+    new OK({
+      message: "Logout thành công",
+    }).send(res);
   };
 
-  static async verifyOtp (req, res) {
-    const { email, otp, newPassword } = req.body;
-    const result = await AuthService.verifyOtpAndResetPassword(email, otp, newPassword);
-    res.status(200).json({
-      message: "reset password success",
+  forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const result = await this.authService.sendOtpToEmail(email);
+    new OK({
+      result,
     });
   };
-}
 
-export default AuthController;
+  verifyOtp = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
+    const result = await this.authService.verifyOtpAndResetPassword(
+      email,
+      otp,
+      newPassword
+    );
+    new OK({
+      result,
+    });
+  }
+}

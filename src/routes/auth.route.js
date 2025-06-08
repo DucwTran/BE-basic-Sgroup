@@ -1,17 +1,62 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/auth.controller.js";
+import User from "../models/user.model.js";
+import AuthController from "../controllers/auth.controller.js";
+import AuthService from "../services/auth.service.js";
+import AuthUtil from "../utils/auth.utils.js";
 import asyncHandler from "../middlewares/asyncHandle.js";
-import checkAuth from "../middlewares/checkAuth.js";
+import AuthValidator from "../middlewares/auth.middleware.js";
 
-const router = Router();
+export default class AuthRoute {
+  constructor() {
+    this.router = Router();
+    this.authController = new AuthController(
+      new AuthService(User, new AuthUtil())
+    );
+    this.authValidator = new AuthValidator();
+    this.setupRoutes();
+  }
+  
+  setupRoutes() {
+    // [POST] /register
+    this.router.post(
+      "/register",
+      asyncHandler(this.authValidator.registerValidate),
+      asyncHandler(this.authController.register)
+    );
 
-router.post("/register", asyncHandler(AuthController.register));
-router.post("/login", asyncHandler(AuthController.login));
-router.post("/processNewToken", asyncHandler(AuthController.processNewToken));
-router.post("/logout",checkAuth, asyncHandler(AuthController.logout));
-router.post("/forgot-password", asyncHandler(AuthController.forgotPassword));
-router.post("/verify-otp", asyncHandler(AuthController.verifyOtp));
+    // [POST] /login
+    this.router.post(
+      "/login",
+      asyncHandler(this.authValidator.loginValidate),
+      asyncHandler(this.authController.login)
+    );
 
+    // [POST] /processNewToken
+    this.router.post(
+      "/processNewToken",
+      asyncHandler(this.authController.processNewToken)
+    );
 
+    // [POST] /logout
+    this.router.post(
+      "/logout",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authController.logout)
+    );
 
-export default router;
+    // [POST] /forgot-password
+    this.router.post(
+      "/forgot-password",
+      asyncHandler(this.authController.forgotPassword)
+    );
+
+    // [POST] /verify-otp
+    this.router.post(
+      "/verify-otp",
+      asyncHandler(this.authController.verifyOtp)
+    );
+  }
+  getRoute() {
+    return this.router;
+  }
+}

@@ -1,23 +1,28 @@
-import VoteService from "../services/vote.service.js";
-
-class VoteController {
-  static async createVote(req, res) {
-    const { pollId, optionId } = req.body;
-    const userId = req.userId; // từ middleware checkAuth
-    
-    const vote = await VoteService.createVote({ userId, pollId, optionId });
-    return res.status(201).json({ message: "Vote created", vote });
+import { OK } from "../handlers/success.response.js";
+export default class VoteController {
+  constructor(VoteService) {
+    this.voteService = VoteService;
   }
+  createVote = async (req, res) => {
+    const { pollId, optionId } = req.body;
+    const userId = req.userId;
+    const vote = await this.voteService.createVote({
+      userId,
+      pollId,
+      optionId,
+    });
+    new OK({
+      message: "Vote created",
+      meatadata: vote,
+    }).send(res);
+  };
 
-  static async deleteVote(req, res) {
+  deleteVote = async (req, res) => {
     const { pollId } = req.body;
     const userId = req.userId;
-
-    const deleted = await VoteService.deleteVote({ userId, pollId });
-    if (!deleted) return res.status(404).json({ message: "Vote not found" });
-
-    return res.status(200).json({ message: "Vote deleted" });
-  }
+    const deleted = await this.voteService.deleteVote({ userId, pollId });
+    new OK({
+      message: "Vote deleted",
+    }).send(res);
+  };
 }
-
-export default VoteController;
