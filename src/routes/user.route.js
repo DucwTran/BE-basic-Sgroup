@@ -1,26 +1,73 @@
 import { Router } from "express";
-import { validateCreateUser } from "../middlewares/validateCreateUser.js";
-import { validatePatchUser } from "../middlewares/validatePatchUser.js";
-import { UserController } from "../controllers/user.controller.js";
-import checkAuth from "../middlewares/checkAuth.js";
+import User from "../models/user.model.js";
+import Vote from "../models/vote.model.js";
+import UserController from "../controllers/user.controller.js";
+import UserService from "../services/user.service.js";
+import AuthUtil from "../utils/auth.utils.js";
 import asyncHandler from "../middlewares/asyncHandle.js";
-const router = Router();
+import UserValidator from "../middlewares/user.middleware.js";
+import AuthValidator from "../middlewares/auth.middleware.js";
 
-router.get("/users", asyncHandler(UserController.getAllUsers));
+export default class UserRoute {
+  constructor() {
+    this.router = Router();
+    this.userController = new UserController(
+      new UserService(User, new AuthUtil(), Vote)
+    );
+    this.userValidator = new UserValidator();
+    this.authValidator = new AuthValidator();
+    this.setupRoutes();
+  }
+  setupRoutes() {
+    // [GET] get all users (Admin)
+    this.router.get(
+      "/",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.userController.getAllUsers)
+    );
 
-router.get("/users/me", checkAuth, asyncHandler(UserController.getUserInfo)); // nằm trên /users/:id vì nó động nên vô tình nó trùng với /me nên /me không chạy
+    // [GET] get profile (Admin and User)
+    this.router.get(
+      "/me",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.userController.getUserInfo)
+    ); // nằm trên /users/:id vì nó động nên vô tình nó trùng với /me nên /me không chạy
 
-router.get("/users/:id", asyncHandler(UserController.getUserById));
+    // [GET] get user by id
+    this.router.get(
+      "/:id",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.userController.getUserById)
+    );
 
-router.post(
-  "/users",
-  asyncHandler(validateCreateUser, UserController.postUser)
-);
+    // [POST] create new user (Admin)
+    this.router.post(
+      "/",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.userValidator.checkInput),
+      asyncHandler(this.userController.postUser)
+    );
 
-router.put("/users/:id", asyncHandler(UserController.putUser));
+    // [PUT] update user by id (Admin || User with same id)
+    this.router.put(
+      "/:id",
+      asyncHandler(this.authValidator.checkUpdateProfile),
+      asyncHandler(this.userController.putUser)
+    );
 
-router.patch("/users/:id", validatePatchUser, asyncHandler(UserController.patchUser));
+    // [DELETE] delete user by id (Admin)
+    this.router.delete(
+      "/:id",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.userController.deleteUser)
+    );
+  }
 
-router.delete("/users/:id", asyncHandler(UserController.deleteUser));
-
-export default router;
+  getRoute() {
+    return this.router;
+  }
+}

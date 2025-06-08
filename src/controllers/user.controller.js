@@ -1,85 +1,53 @@
-import { UserService } from "../services/user.service.js";
-import { BadRequestError, NotFoundError } from "../handlers/error.response.js";
+import { OK } from "../handlers/success.response.js"
 
-export class UserController {
-  static async getAllUsers(req, res) {
-    const users = await UserService.getAllUsers();
-    res.status(200).json(users);
+export default class UserController {
+  constructor(UserService) {
+    this.userService = UserService;
+  }
+  getAllUsers = async (req, res) => {
+    const users = await this.userService.getAllUsers();
+    new OK({
+      message: "Successfully",
+      metadata: users,
+    }).send(res);;
   }
 
-  static async getUserById(req, res) {
-    const user = await UserService.getUserById(req.params.id);
-    if (!user) throw new NotFoundError("User not found");
-    res.status(200).json(user);
+  getUserById = async (req, res) => {
+    const user = await this.userService.getUserById(req.params.id);
+    new OK({
+      message: "Successfully",
+      metadata: user,
+    }).send(res);;
   }
 
-  static async postUser(req, res) {
-    const { fullName, address, email, gender, phone, age } = req.body;
-
-    if (!fullName || !address || !email || !gender || !phone || !age) {
-      throw new BadRequestError("Vui lòng nhập đủ thông tin user");
-    }
-
-    const user = await UserService.createUser({
-      fullName,
-      address,
-      email,
-      gender,
-      phone,
-      age,
-    });
-
-    res.status(201).json({ message: "Tạo người dùng thành công", user });
+  postUser = async (req, res) => {
+    const user = await this.userService.createUser(req.body);
+    new OK({
+      message: "Successfully",
+      metadata: user,
+    }).send(res);;
   }
 
-  static async putUser(req, res) {
-    const { fullName, address, email, gender, phone, age } = req.body;
-
-    if (!fullName || !address || !email || !gender || !phone || !age) {
-      throw new BadRequestError("Vui lòng cung cấp đầy đủ thông tin");
-    }
-
-    const user = await UserService.updateUser(req.params.id, {
-      fullName,
-      address,
-      email,
-      gender,
-      phone,
-      age,
-    });
-
-    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
-
-    res.status(200).json({ message: "Cập nhật thành công", user });
+  putUser = async (req, res) => {
+    const user = await this.userService.updateUser(req.params.id, req.body);
+    new OK({
+      message: "Update Successfully",
+    }).send(res);;
   }
 
-  static async patchUser(req, res) {
-    const user = await UserService.updateUser(req.params.id, req.body);
-    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
-
-    res.status(200).json({ message: "Cập nhật một phần thành công", user });
+  deleteUser = async (req, res)  =>{
+    const user = await this.userService.deleteUser(req.params.id);
+    new OK({
+      message: "Deleted Successfully",
+    }).send(res);;
   }
 
-  static async deleteUser(req, res) {
-    const user = await UserService.deleteUser(req.params.id);
-    if (!user) throw new NotFoundError("Không tìm thấy người dùng");
-
-    res.status(200).json({ message: "Xóa người dùng thành công", user });
-  }
-
-  static async getUserInfo(req, res) {
-    const user = await UserService.getUserInfo(req.userId);
-    if (!user) throw new NotFoundError("Người dùng không tồn tại");
-
-    res.status(200).json({
-      fullName: user.fullName,
-      email: user.email,
-      address: user.address,
-      phone: user.phone,
-      gender: user.gender,
-      age: user.age,
-    });
+  getUserInfo = async (req, res) => {
+    const user = await this.userService.getUserInfo(req.userId);
+    new OK({
+      message: "Successfully",
+      metadata: user
+    }).send(res);;
   }
 }
 
-export default UserController;

@@ -2,14 +2,22 @@ import mongoose from "mongoose";
 
 const pollSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    title: {
+      type: String,
+      required: true,
+    },
+    description: { 
+      type: String 
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    isLocked: { type: Boolean, default: false },
+    isLocked: { 
+      type: Boolean, 
+      default: false 
+    },
     options: [
       {
         text: String,
@@ -18,7 +26,6 @@ const pollSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 
 const Poll = mongoose.model("Poll", pollSchema, "polls");
 

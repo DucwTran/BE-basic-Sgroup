@@ -1,23 +1,30 @@
-import Poll from "../models/poll.model.js";
-import Vote from "../models/vote.model.js";
-import User from "../models/user.model.js"
+import { BadRequestError, NotFoundError } from "../handlers/error.response.js";
 import mongoose from "mongoose";
-class PollService {
-  //Done
-  static async createPoll(data) {
-    return await Poll.create(data);
+export default class PollService {
+  constructor(Poll, Vote, User) {
+    this.pollModel = Poll;
+    this.userModel = User;
+    this.voteModel = Vote;
   }
-  //Done
-  static async getAllPolls({ page = 1, limit = 10 }) {
+  createPoll = async (data) => {
+    if (!data.title) {
+      console.log(data)
+      throw new BadRequestError("Thiếu nội dung câu hỏi");
+    }
+    return await this.pollModel.create(data);
+  };
+
+  getAllPolls = async ({ page = 1, limit = 10 }) => {
     const skip = (page - 1) * limit;
 
     const [polls, total] = await Promise.all([
-      Poll.find()
+      this.pollModel
+        .find()
         .skip(skip)
         .limit(limit)
         .populate("createdBy", "fullName _id")
         .lean(),
-      Poll.countDocuments(),
+      this.pollModel.countDocuments(),
     ]);
 
     const formatted = polls.map((poll) => ({
@@ -44,17 +51,19 @@ class PollService {
       page,
       limit,
     };
-  }
-  //Done
-  static async getPollById(pollId) {
-    const poll = await Poll.findById(pollId)
+  };
+
+  getPollById = async (pollId) => {
+    const poll = await this.pollModel
+      .findById(pollId)
       .populate("createdBy", "fullName _id")
-      .lean();
+      .lean(); //return về JS object, giúp tăng hiệu suất (không cần các method của mongoose document).
 
-    if (!poll) return null;
+    if (!poll) throw NotFoundError("Poll Not Found");
 
-    const votes = await Vote.find({ pollId }).lean();
+    const votes = await this.voteModel.find({ pollId }).lean();
 
+    //Chuẩn bị hashmap để lưu số phiếu từng option
     const optionVoteMap = {};
     for (const opt of poll.options) {
       optionVoteMap[opt._id.toString()] = {
@@ -63,6 +72,7 @@ class PollService {
       };
     }
 
+    //Tính tổng phiếu và user đã vote cho từng option
     for (const vote of votes) {
       const optionId = vote.optionId.toString();
       if (optionVoteMap[optionId]) {
@@ -73,10 +83,9 @@ class PollService {
 
     const userIds = [...new Set(votes.map((v) => v.userId.toString()))];
 
-    const users = await User.find(
-      { _id: { $in: userIds } },
-      "fullName _id"
-    ).lean();
+    const users = await this.userModel
+      .find({ _id: { $in: userIds } }, "fullName _id")
+      .lean();
 
     const userMap = {};
     for (const u of users) {
@@ -109,16 +118,15 @@ class PollService {
         id: poll.createdBy._id,
         username: poll.createdBy.username,
       },
-      isLocked: poll.locked,
+      isLocked: poll.isLocked,
       createdAt: poll.createdAt,
       expiresAt: poll.expiresAt || null,
       totalVotes,
     };
-  }
+  };
 
-  //Done
-  static async addOption(pollId, text) {
-    return await Poll.findByIdAndUpdate(
+  addOption = async (pollId, text) => {
+    return await this.pollModel.findByIdAndUpdate(
       pollId,
       {
         $push: {
@@ -129,23 +137,29 @@ class PollService {
       },
       { new: true }
     );
-  }
-  //Done
-  static async removeOption(pollId, optionId) {
-    return await Poll.findByIdAndUpdate(
+  };
+
+  removeOption = async (pollId, optionId) => {
+    return await this.pollModel.findByIdAndUpdate(
       pollId,
       { $pull: { options: { _id: new mongoose.Types.ObjectId(optionId) } } },
       { new: true }
     );
-  }
+  };
 
-  static async lockPoll(id) {
-    return await Poll.findByIdAndUpdate(id, { isLocked: true }, { new: true });
-  }
+  lockPoll = async (id) => {
+    return await this.pollModel.findByIdAndUpdate(
+      id,
+      { isLocked: true },
+      { new: true }
+    );
+  };
 
-  static async unlockPoll(id) {
-    return await Poll.findByIdAndUpdate(id, { isLocked: false }, { new: true });
-  }
+  unlockPoll = async (id) => {
+    return await this.pollModel.findByIdAndUpdate(
+      id,
+      { isLocked: false },
+      { new: true }
+    );
+  };
 }
-
-export default PollService;

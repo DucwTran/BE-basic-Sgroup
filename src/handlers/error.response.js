@@ -44,9 +44,9 @@ class NotFoundError extends ErrorResponse {
 }
 
 export {
-  ErrorResponse,
-  ConflictRequestError,
-  BadRequestError,
-  AuthFailureError,
-  NotFoundError,
+  ErrorResponse, //Tùy truyền vào - Class cha cho các lỗi khác, dùng chung cho những lỗi có thể tùy chỉnh message/status.
+  ConflictRequestError, //409 - Khi có xung đột tài nguyên, ví dụ: đăng ký tài khoản với email đã tồn tại.
+  BadRequestError, //400 - Khi client gửi yêu cầu không hợp lệ, thiếu trường, sai kiểu dữ liệu...
+  AuthFailureError, //401 - Khi xác thực thất bại, ví dụ: không có token, token sai hoặc hết hạn.
+  NotFoundError, //404 - Khi không tìm thấy dữ liệu, ví dụ: user với id không tồn tại.
 };

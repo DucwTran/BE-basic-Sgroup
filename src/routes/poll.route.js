@@ -1,46 +1,70 @@
 import { Router } from "express";
+import AuthValidator from "../middlewares/auth.middleware.js";
+import Poll from "../models/poll.model.js";
+import Vote from "../models/vote.model.js";
+import User from "../models/user.model.js";
+import PollService from "../services/poll.service.js";
 import PollController from "../controllers/poll.controller.js";
 import asyncHandler from "../middlewares/asyncHandle.js";
-import checkAuth from "../middlewares/checkAuth.js";
-import checkAdmin from "../middlewares/checkAdmin.js";
-const router = Router();
 
-router.post(
-  "/polls",
-  checkAuth,
-  checkAdmin,
-  asyncHandler(PollController.createPoll)
-);
+export default class PollRoute {
+  constructor() {
+    this.router = Router();
+    this.authValidator = new AuthValidator();
+    this.pollController = new PollController(new PollService(Poll, Vote, User));
+    this.setupRoutes();
+  }
+  setupRoutes() {
+    // [POST] add new poll (admin)
+    this.router.post(
+      "/",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.pollController.createPoll)
+    );
 
-router.get("/polls", checkAuth, asyncHandler(PollController.getAllPolls));
+    // [GET] get all polls (admin & user)
+    this.router.get(
+      "/",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.pollController.getAllPolls)
+    );
 
-router.get("/polls/:id", checkAuth, asyncHandler(PollController.getPollById));
+    // [GET] get poll by id (admin & user)
+    this.router.get(
+      "/:id",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.pollController.getPollById)
+    );
 
-router.post(
-  "/polls/add-option/:pollId",
-  checkAuth,
-  checkAdmin,
-  asyncHandler(PollController.addOption)
-);
+    this.router.post(
+      "/add-option/:pollId",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.pollController.addOption)
+    );
 
-router.delete(
-  "/polls/:pollId/options/:optionId",
-  checkAuth,
-  checkAdmin,
-  asyncHandler(PollController.removeOption)
-);
+    this.router.delete(
+      "/:pollId/options/:optionId",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.pollController.removeOption)
+    );
 
-router.patch(
-  "/polls/lock-poll/:pollId",
-  checkAuth,
-  checkAdmin,
-  asyncHandler(PollController.lockPoll)
-);
-router.patch(
-  "/polls/unlock-poll/:pollId",
-  checkAuth,
-  checkAdmin,
-  asyncHandler(PollController.unlockPoll)
-);
-
-export default router;
+    this.router.put(
+      "/lock-poll/:pollId",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.pollController.lockPoll)
+    );
+    this.router.put(
+      "/unlock-poll/:pollId",
+      asyncHandler(this.authValidator.checkAuth),
+      asyncHandler(this.authValidator.checkAdmin),
+      asyncHandler(this.pollController.unlockPoll)
+    );
+  }
+  getRoute() {
+    return this.router;
+  }
+}
