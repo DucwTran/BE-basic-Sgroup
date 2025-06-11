@@ -66,7 +66,7 @@ export default class AuthController {
     const result = await this.authService.sendOtpToEmail(email);
     new OK({
       result,
-    });
+    }).send(res);
   };
 
   verifyOtp = async (req, res) => {
@@ -78,6 +78,6 @@ export default class AuthController {
     );
     new OK({
       result,
-    });
+    }).send(res);
   }
 }

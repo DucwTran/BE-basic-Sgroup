@@ -21,7 +21,7 @@ export default class AuthService {
 
     const hashedPassword = await this.AuthUtil.hashPassword(password);
 
-    const newUser = new this.use({
+    const newUser = new this.userModel({
       fullName,
       address,
       email,
