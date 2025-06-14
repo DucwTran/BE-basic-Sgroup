@@ -20,12 +20,9 @@ export default class UserRoute {
   }
   setupRoutes() {
     // [GET] get all users (Admin)
-    this.router.get(
-      "/",
-      asyncHandler(this.authValidator.checkAuth),
-      asyncHandler(this.authValidator.checkAdmin),
-      asyncHandler(this.userController.getAllUsers)
-    );
+    //asyncHandler(this.authValidator.checkAuth),
+    //asyncHandler(this.authValidator.checkAdmin),
+    this.router.get("/", asyncHandler(this.userController.getAllUsers));
 
     // [GET] get profile (Admin and User)
     this.router.get(
