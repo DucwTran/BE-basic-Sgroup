@@ -15,7 +15,7 @@ export default class AuthRoute {
     this.authValidator = new AuthValidator();
     this.setupRoutes();
   }
-  
+
   setupRoutes() {
     // [POST] /register
     this.router.post(
@@ -55,6 +55,9 @@ export default class AuthRoute {
       "/verify-otp",
       asyncHandler(this.authController.verifyOtp)
     );
+
+    // [GET] /test-ec2
+    this.router.get("/test-ec2", asyncHandler(this.authController.testEc2));
   }
   getRoute() {
     return this.router;

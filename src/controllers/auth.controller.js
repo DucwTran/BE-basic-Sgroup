@@ -79,5 +79,11 @@ export default class AuthController {
     new OK({
       result,
     }).send(res);
-  }
+  };
+
+  testEc2 = async (req, res) => {
+    new OK({
+      message: "EC2 successfully"
+    }).send(res);
+  };
 }
