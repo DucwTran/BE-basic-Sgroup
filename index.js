@@ -14,6 +14,10 @@ connect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.get('/',(req, res) => {
+  res.send('Test CI/CD')
+})
+
 
 setupRoutes(app);
 app.use(errorHandler);
