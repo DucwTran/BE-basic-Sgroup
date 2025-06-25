@@ -7,7 +7,7 @@ export default class UserController {
   getAllUsers = async (req, res) => {
     const users = await this.userService.getAllUsers();
     new OK({
-      message: "Successfully",
+      message: "Successfully sau khi test CI/CD",
       metadata: users,
     }).send(res);;
   }
