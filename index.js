@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.get('/',(req, res) => {
-  res.send('Test CI/CD')
+  res.send('Test CI/CD sau khi đổi flow')
 })
 
 
