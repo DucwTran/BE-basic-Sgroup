@@ -1,4 +1,4 @@
-name: Deploy backend to EC2 with Docker
+name: Build & Deploy to EC2 via Docker Hub
 
 on:
   push:
@@ -6,30 +6,49 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: SSH & Restart Docker container
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v3
 
-      - name: SSH and deploy
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t my-backend-app .
+          docker tag my-backend-app ${{ secrets.DOCKER_USERNAME }}/my-backend-app:latest
+
+      - name: Push image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/my-backend-app:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH into EC2 and deploy container
         uses: appleboy/ssh-action@v0.1.8
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            cd /home/ubuntu/BE-basic-Sgroup
-            git pull origin main
+            echo " Pulling latest Docker image..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/my-backend-app:latest
 
-            echo "Stopping old container..."
+            echo "Stopping and removing old container..."
             docker stop backend-container || true
             docker rm backend-container || true
 
-            echo "Building new image..."
-            docker build -t my-backend-app .
-
-            echo "Running new container..."
-            docker run -d -p 8000:8000 --name backend-container my-backend-app
+            echo "Running new container with .env"
+            docker run -d \
+              --env-file /home/ubuntu/BE-basic-Sgroup/.env \
+              -p 8000:8000 \
+              --name backend-container \
+              ${{ secrets.DOCKER_USERNAME }}/my-backend-app:latest
